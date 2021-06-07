@@ -12,8 +12,12 @@ export const getPosts = async (req, res) => {
   }
 };
 export const createPost = async (req, res) => {
-  const post = req.body;
-  const newPost = new PostMessage(post);
+  const post = req.body; // frontend ka sab data req.body mai aata hai , in post request
+  const newPost = new PostMessage({
+    ...post,
+    creator: req.userId,
+    createdAt: new Date().toISOString(),
+  });
   try {
     console.log("in try createPost node js");
     await newPost.save();
@@ -70,27 +74,33 @@ export const likePost = async (req, res) => {
 
   try {
     console.log("in try likePost node js");
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.log("id wrong hai in likePost node");
-      return res.status(404).send("No post with that id for likePost");
+    if (!req.userId) {
+      return res.json({ message: "Unauthenticated" });
     }
-    const post = await PostMessage.findById(id);
-    const updatedPost = await PostMessage.findByIdAndUpdate(
-      id,
-      { likeCount: post.likeCount + 1 },
-      { new: true }
-    );
-    // console.log("Like updatedPost is below");
-    // console.log(updatedPost);
 
-    res.json(updatedPost);
+    if (!mongoose.Types.ObjectId.isValid(id))
+      return res.status(404).send(`No post with id: ${id}`);
+
+    const post = await PostMessage.findById(id);
+
+    const index = post.likes.findIndex((id) => id === String(req.userId));
+
+    if (index === -1) {
+      post.likes.push(req.userId);
+    } else {
+      post.likes = post.likes.filter((id) => id !== String(req.userId));
+    }
+    const updatedPost = await PostMessage.findByIdAndUpdate(id, post, {
+      new: true,
+    });
+    res.status(200).json(updatedPost);
   } catch (error) {
-    console.log("in catch likePost node js");
+    console.log("in catch likePost node js ::", error);
     res.json({ message: error });
   }
 };
 
-export const dislikePost = async (req, res) => {
+/* export const dislikePost = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -111,6 +121,38 @@ export const dislikePost = async (req, res) => {
     res.json(updatedPost);
   } catch (error) {
     console.log("in catch dislikePost node js");
+    res.json({ message: error });
+  }
+};
+ */
+
+export const dislikePost = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    console.log("in try dislikes node js");
+    if (!req.userId) {
+      return res.json({ message: "Unauthenticated" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id))
+      return res.status(404).send(`No post with id: ${id}`);
+
+    const post = await PostMessage.findById(id);
+
+    const index = post.dislikes.findIndex((id) => id === String(req.userId));
+
+    if (index === -1) {
+      post.dislikes.push(req.userId);
+    } else {
+      post.dislikes = post.dislikes.filter((id) => id !== String(req.userId));
+    }
+    const updatedPost = await PostMessage.findByIdAndUpdate(id, post, {
+      new: true,
+    });
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.log("in catch dislikes node js ::", error);
     res.json({ message: error });
   }
 };
