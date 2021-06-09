@@ -19,9 +19,9 @@ app.use(cors());
 app.use("/posts", postRoutes);
 app.use("/user", userRoutes);
 
-/* app.get("/", (req, res) => {
-  res.send("Welcome to Memories API"); 
-}); */
+app.get("/", (req, res) => {
+  res.send("Welcome to Memories API");
+});
 const CONNECTION_URL =
   "mongodb+srv://Divendra:8976@cluster0.id6ws.mongodb.net/memories?retryWrites=true&w=majority";
 

@@ -2,15 +2,65 @@ import PostMessage from "../models/postMessage.js";
 import mongoose from "mongoose";
 
 export const getPosts = async (req, res) => {
+  const { page } = req.query;
+
   try {
-    const postMessages = await PostMessage.find();
-    console.log("in try getPosts node js");
-    res.status(200).json(postMessages);
+    const LIMIT = 8;
+    const startIndex = (Number(page) - 1) * LIMIT; //getting the starting index of every page
+    const total = await PostMessage.countDocuments({});
+    console.log("total records are", total);
+
+    const posts = await PostMessage.find()
+      .sort({ _id: -1 })
+      .limit(LIMIT)
+      .skip(startIndex);
+
+    console.log("in try, below are getPosts node js");
+    //console.log(posts);
+    res.status(200).json({
+      data: posts,
+      currentPage: Number(page),
+      numberOfPages: Math.ceil(total / LIMIT),
+    });
+
+    console.log("last line of try");
   } catch (error) {
     console.log("in catch getPosts node js");
     res.status(404).json({ message: error.message });
   }
 };
+
+export const getPost = async (req, res) => {
+  const { id } = req.params;
+  try {
+    console.log("in try of getPost node js");
+    const post = await PostMessage.findById(id);
+    res.status(200).json(post);
+  } catch (error) {
+    console.log("in catch getPost node js");
+    res.status(404).json({ message: error });
+  }
+};
+
+//QUERY = /posts?page=1 --> page = 1  //QUERY is used when we want to query some data.
+//PARAMS = /posts/:id -- > /posts/123   --> id=123   // PARAMS is used when we want some specific resource
+
+export const getPostsBySearch = async (req, res) => {
+  const { searchQuery, tags } = req.query;
+  try {
+    const title = new RegExp(searchQuery, "i");
+    const posts = await PostMessage.find({
+      $or: [{ title }, { tags: { $in: tags.split(",") } }],
+    });
+    console.log("searched posts are below");
+    // console.log(posts);
+    res.json({ data: posts });
+  } catch (error) {
+    console.log("in getPostsBySearch node js ::", error);
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const createPost = async (req, res) => {
   const post = req.body; // frontend ka sab data req.body mai aata hai , in post request
   const newPost = new PostMessage({
