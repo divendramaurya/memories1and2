@@ -7,6 +7,7 @@ import {
   CardMedia,
   Button,
   Typography,
+  ButtonBase,
 } from "@material-ui/core";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
 import ThumbDownAltIcon from "@material-ui/icons/ThumbDownAlt";
@@ -15,11 +16,13 @@ import ThumbDownAltOutlined from "@material-ui/icons/ThumbDownAltOutlined";
 import DeleteIcon from "@material-ui/icons/Delete";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import moment from "moment";
+import { useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { deletePost, likePost, dislikePost } from "../../../actions/posts";
 
 export const Post = ({ post, setcurrentID }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
 
   const classes = useStyles();
   const user = JSON.parse(localStorage.getItem("profile"));
@@ -83,9 +86,25 @@ export const Post = ({ post, setcurrentID }) => {
     );
   };
 
+  const openPost = () => {
+    history.push(`/posts/${post._id}`);
+  };
+
   return (
-    <Card className={classes.card}>
+    <Card
+      className={classes.card}
+      raised
+      elevation={6}
+      style={{ cursor: "pointer" }}
+    >
+      {/* <ButtonBase
+        component="span"
+        name="test"
+        className={classes.cardAction}
+        onClick={openPost}
+      > */}
       <CardMedia
+        onClick={openPost}
         className={classes.media}
         image={
           post.selectedFile ||
@@ -134,6 +153,8 @@ export const Post = ({ post, setcurrentID }) => {
           {post.message}
         </Typography>
       </CardContent>
+      {/*  </ButtonBase> */}
+
       <CardActions className={classes.cardActions}>
         <Button
           disabled={!user?.result}

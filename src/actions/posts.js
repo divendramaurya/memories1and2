@@ -6,30 +6,69 @@ import {
   LIKE,
   UPDATE,
   DISLIKE,
+  FETCH_BY_SEARCH,
+  START_LOADING,
+  END_LOADING,
+  FETCH_POST,
 } from "../constants/actionTypes";
 
-export const getPosts = () => async (dispatch) => {
+export const getPosts = (page) => async (dispatch) => {
   try {
+    dispatch({ type: START_LOADING });
     console.log("in try of getPosts method");
-    const { data } = await api.fetchPosts();
+    const { data } = await api.fetchPosts(page);
     console.log("getPosts all post data is below");
     console.log(data);
     dispatch({ type: FETCH_ALL, payload: data });
+    dispatch({ type: END_LOADING });
   } catch (error) {
     console.log("error occured in getPosts method ::" + error.message);
   }
 };
 
-export const createPost = (post) => async (dispatch) => {
+export const getPost = (id) => async (dispatch) => {
   try {
+    dispatch({ type: START_LOADING });
+    console.log("in try of getPost method");
+    const { data } = await api.fetchPost(id);
+    console.log("getPost all post data is below");
+    console.log(data);
+    dispatch({ type: FETCH_POST, payload: data });
+    dispatch({ type: END_LOADING });
+  } catch (error) {
+    console.log("error occured in getPost method ::" + error.message);
+  }
+};
+
+export const getPostsBySearch = (searchQuery) => async (dispatch) => {
+  try {
+    dispatch({ type: START_LOADING });
+    console.log("in try of getPostBySearch ::");
+    const {
+      data: { data },
+    } = await api.fetchPostsBySearch(searchQuery);
+    console.log("below is getPostBySearch data ::");
+    console.log(data);
+    dispatch({ type: FETCH_BY_SEARCH, payload: data });
+    dispatch({ type: END_LOADING });
+  } catch (error) {
+    console.log("Error is getPostBySearch ::", error);
+  }
+};
+
+export const createPost = (post, history) => async (dispatch) => {
+  try {
+    dispatch({ type: START_LOADING });
     console.log("in try of createPost method");
     const { data } = await api.createPost(post);
+    history.push(`/posts/${data._id}`);
     console.log("createPost data is below");
     console.log(data);
     dispatch({ type: CREATE, payload: data });
+    dispatch({ type: END_LOADING });
   } catch (error) {
     console.log("in catch of createPost");
-    console.log("error occured in createPost method :: " + error.message);
+    console.log("error occured in createPost method :: " + error);
   }
 };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 import { TextField, Button, Typography, Paper } from "@material-ui/core";
 import FileBase from "react-file-base64";
 import { useDispatch } from "react-redux";
@@ -12,10 +13,11 @@ export const Form = ({ currentID, setcurrentID }) => {
   const user = JSON.parse(localStorage.getItem("profile"));
 
   const post = useSelector((state) =>
-    currentID ? state.posts.find((p) => p._id === currentID) : null
+    currentID ? state.posts.posts.find((p) => p._id === currentID) : null
   );
 
   const dispatch = useDispatch();
+  const history = useHistory();
 
   useEffect(() => {
     if (post) {
@@ -39,7 +41,7 @@ export const Form = ({ currentID, setcurrentID }) => {
       );
     } else {
       console.log("create hoga ::::");
-      dispatch(createPost({ ...postData, name: user?.result?.name }));
+      dispatch(createPost({ ...postData, name: user?.result?.name }, history));
     }
     clear();
   };
@@ -65,7 +67,7 @@ export const Form = ({ currentID, setcurrentID }) => {
   }
 
   return (
-    <Paper className={classes.paper}>
+    <Paper className={classes.paper} elevation={6}>
       <form
         autoComplete="off"
         noValidate
